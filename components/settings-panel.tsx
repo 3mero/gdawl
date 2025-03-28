@@ -53,6 +53,7 @@ export function SettingsPanel({
 
   const [activeSection, setActiveSection] = useState<string>("general")
   const [colorPickerOpen, setColorPickerOpen] = useState<string | null>(null)
+  const [activeSettingsTab, setActiveSettingsTab] = useState<string>("general")
 
   // مجموعة من الألوان المقترحة
   const suggestedColors = [
@@ -126,22 +127,42 @@ export function SettingsPanel({
           </button>
         </div>
 
+        {/* Mobile Tabs - Only visible on small screens */}
+        <div className="md:hidden overflow-x-auto">
+          <div className="flex border-b">
+            {menuItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveSettingsTab(item.id)}
+                className={`flex-1 flex flex-col items-center justify-center py-3 px-2 text-xs ${
+                  activeSettingsTab === item.id ? "border-b-2 border-primary text-primary" : "text-gray-500"
+                }`}
+              >
+                {item.icon}
+                <span className="mt-1 whitespace-nowrap">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Content */}
         <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
-          {/* Sidebar */}
-          <div className="w-full md:w-64 bg-gray-50 border-b md:border-b-0 md:border-l overflow-y-auto">
+          {/* Sidebar - Only visible on medium screens and up */}
+          <div className="hidden md:block w-64 bg-gray-50 border-l overflow-y-auto">
             <ul className="py-2">
               {menuItems.map((item) => (
                 <li key={item.id}>
                   <button
-                    onClick={() => setActiveSection(item.id)}
+                    onClick={() => setActiveSettingsTab(item.id)}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-right transition-colors ${
-                      activeSection === item.id
+                      activeSettingsTab === item.id
                         ? "bg-primary/10 text-primary border-r-4 border-primary"
                         : "hover:bg-gray-100"
                     }`}
                   >
-                    <span className={activeSection === item.id ? "text-primary" : "text-gray-500"}>{item.icon}</span>
+                    <span className={activeSettingsTab === item.id ? "text-primary" : "text-gray-500"}>
+                      {item.icon}
+                    </span>
                     <span className="font-medium">{item.label}</span>
                   </button>
                 </li>
@@ -150,10 +171,10 @@ export function SettingsPanel({
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 overflow-y-auto p-6">
-            {activeSection === "general" && (
-              <div className="space-y-8">
-                <h3 className="text-lg font-bold border-b pb-2">الإعدادات العامة</h3>
+          <div className="flex-1 overflow-y-auto p-4 md:p-6">
+            {activeSettingsTab === "general" && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold border-b pb-2 md:hidden">الإعدادات العامة</h3>
 
                 {/* تاريخ البدء */}
                 <div className="space-y-4">
@@ -329,16 +350,16 @@ export function SettingsPanel({
               </div>
             )}
 
-            {activeSection === "schedules" && (
+            {activeSettingsTab === "schedules" && (
               <div className="space-y-6">
-                <h3 className="text-lg font-bold border-b pb-2">الجداول المحفوظة</h3>
+                <h3 className="text-lg font-bold border-b pb-2 md:hidden">الجداول المحفوظة</h3>
 
                 {savedSchedules.length > 0 ? (
                   <div className="space-y-3">
                     {savedSchedules.map((schedule) => (
                       <div
                         key={schedule.id}
-                        className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-100 hover:border-primary transition-colors"
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-100 hover:border-primary transition-colors"
                       >
                         <div>
                           <h3 className="font-medium">{schedule.name}</h3>
@@ -347,7 +368,7 @@ export function SettingsPanel({
                             <p className="text-xs text-primary mt-1">الموظف: {schedule.employeeName}</p>
                           )}
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 mt-3 sm:mt-0">
                           <Button
                             size="sm"
                             variant="outline"
@@ -381,41 +402,39 @@ export function SettingsPanel({
               </div>
             )}
 
-            {activeSection === "employees" && (
+            {activeSettingsTab === "employees" && (
               <div className="space-y-6">
-                <h3 className="text-lg font-bold border-b pb-2">إدارة الموظفين</h3>
+                <h3 className="text-lg font-bold border-b pb-2 md:hidden">إدارة الموظفين</h3>
 
                 {employees.length > 0 ? (
                   <div className="space-y-3">
                     {employees.map((employee) => (
                       <div
                         key={employee.id}
-                        className="p-4 rounded-lg border border-gray-200 hover:border-primary transition-colors"
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-lg border border-gray-200 hover:border-primary transition-colors"
                       >
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <div className="font-medium">{employee.name}</div>
-                            <div className="text-sm text-gray-500">{employee.position}</div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                const employeeSchedule = savedSchedules.find((s) => s.employeeName === employee.name)
-                                if (employeeSchedule) {
-                                  loadScheduleFromHistory(employeeSchedule.id)
-                                  onClose()
-                                  alert(`تم تحميل جدول الموظف ${employee.name}`)
-                                } else {
-                                  alert(`لا يوجد جدول للموظف ${employee.name}`)
-                                }
-                              }}
-                            >
-                              <Calendar className="h-4 w-4 ml-1" />
-                              تحميل الجدول
-                            </Button>
-                          </div>
+                        <div>
+                          <div className="font-medium">{employee.name}</div>
+                          <div className="text-sm text-gray-500">{employee.position}</div>
+                        </div>
+                        <div className="flex gap-2 mt-3 sm:mt-0">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const employeeSchedule = savedSchedules.find((s) => s.employeeName === employee.name)
+                              if (employeeSchedule) {
+                                loadScheduleFromHistory(employeeSchedule.id)
+                                onClose()
+                                alert(`تم تحميل جدول الموظف ${employee.name}`)
+                              } else {
+                                alert(`لا يوجد جدول للموظف ${employee.name}`)
+                              }
+                            }}
+                          >
+                            <Calendar className="h-4 w-4 ml-1" />
+                            تحميل الجدول
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -428,11 +447,11 @@ export function SettingsPanel({
               </div>
             )}
 
-            {activeSection === "comments" && (
+            {activeSettingsTab === "comments" && (
               <div className="space-y-6">
-                <h3 className="text-lg font-bold border-b pb-2">التعليقات والملاحظات</h3>
+                <h3 className="text-lg font-bold border-b pb-2 md:hidden">التعليقات والملاحظات</h3>
 
-                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-6 shadow-sm border border-purple-100">
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 md:p-6 shadow-sm border border-purple-100">
                   <p className="text-gray-600 mb-4">
                     يمكنك إضافة تعليقات وملاحظات على أيام محددة في الجدول. انقر بزر الماوس الأيمن على اليوم لإضافة
                     تعليق.
@@ -460,11 +479,11 @@ export function SettingsPanel({
               </div>
             )}
 
-            {activeSection === "system" && (
+            {activeSettingsTab === "system" && (
               <div className="space-y-6">
-                <h3 className="text-lg font-bold border-b pb-2">إعدادات النظام</h3>
+                <h3 className="text-lg font-bold border-b pb-2 md:hidden">إعدادات النظام</h3>
 
-                <div className="bg-red-50 rounded-lg p-6 shadow-sm border border-red-100">
+                <div className="bg-red-50 rounded-lg p-4 md:p-6 shadow-sm border border-red-100">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="bg-red-100 p-2 rounded-full">
                       <RefreshCw className="h-5 w-5 text-red-600" />
