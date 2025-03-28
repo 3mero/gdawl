@@ -10,9 +10,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Settings, RefreshCw, Users, Calendar, ChevronRight, X, Info } from "lucide-react"
-import { formatDate } from "@/lib/utils"
+import { formatDate, safeLocalStorage } from "@/lib/utils"
 import { v4 as uuidv4 } from "uuid"
-import { safeLocalStorage } from "@/lib/safe-local-storage"
 
 export default function HomePage() {
   const {
@@ -67,45 +66,43 @@ export default function HomePage() {
   useEffect(() => {
     if (typeof window !== "undefined" && !isInitialized) {
       // Marcar como inicializado para evitar múltiples ejecuciones
-      setIsInitialized(true);
+      setIsInitialized(true)
 
       // Verificar si localStorage está disponible
-      const isStorageAvailable = safeLocalStorage.isAvailable();
-    
+      const isStorageAvailable = safeLocalStorage.isAvailable()
+
       // Verificar si es la primera visita
-      const isFirstVisit = !localStorage.getItem("schedule-visited");
+      const isFirstVisit = !localStorage.getItem("schedule-visited")
 
       if (isFirstVisit && isStorageAvailable) {
-        localStorage.setItem("schedule-visited", "true");
-        setShowSetupWizard(true);
+        localStorage.setItem("schedule-visited", "true")
+        setShowSetupWizard(true)
       } else {
         // Intentar cargar el último horario guardado
-        const lastScheduleId = localStorage.getItem("current-schedule-id");
+        const lastScheduleId = localStorage.getItem("current-schedule-id")
         if (lastScheduleId && savedSchedules.length > 0) {
-          const found = savedSchedules.find(s => s.id === lastScheduleId);
+          const found = savedSchedules.find((s) => s.id === lastScheduleId)
           if (found) {
-            loadScheduleFromHistory(lastScheduleId);
+            loadScheduleFromHistory(lastScheduleId)
           } else if (savedSchedules.length > 0) {
             // Si no se encuentra el último horario, cargar el más reciente
-            loadScheduleFromHistory(savedSchedules[savedSchedules.length - 1].id);
+            loadScheduleFromHistory(savedSchedules[savedSchedules.length - 1].id)
           }
         }
       }
 
       // Cargar el modo de visualización guardado
-      const storedViewMode = localStorage.getItem("schedule-view-mode");
+      const storedViewMode = localStorage.getItem("schedule-view-mode")
       if (storedViewMode) {
-        setScheduleViewMode(storedViewMode);
+        setScheduleViewMode(storedViewMode)
       }
 
       // Solo inicializar si no hay horarios guardados
       if (!savedSchedules || savedSchedules.length === 0) {
-        initializeSchedule();
+        initializeSchedule()
       }
     }
-  }, [isInitialized, initializeSchedule, savedSchedules, loadScheduleFromHistory]);
-
-  // Eliminar el segundo useEffect que carga el último horario, ya que ahora lo hacemos en el primer useEffect
+  }, [isInitialized, initializeSchedule, savedSchedules, loadScheduleFromHistory])
 
   // حفظ وضع العرض عند تغييره
   const handleViewModeChange = (mode: string) => {
@@ -671,8 +668,6 @@ export default function HomePage() {
                                   onClick={() => {
                                     if (window.confirm(`هل أنت متأكد من حذف جدول ${schedule.name}؟`)) {
                                       deleteScheduleFromHistory(schedule.id)
-                                      // إذ  {
-                                      deleteScheduleFromHistory(schedule.id)
                                       // إذا كان هذا آخر جدول، افتح نافذة إنشاء جدول جديد
                                       if (savedSchedules.length === 1) {
                                         setSetupStep(1)
@@ -1098,5 +1093,7 @@ export default function HomePage() {
           )}
         </div>
       </main>
-    </ThemeProvider>\
+    </ThemeProvider>
+  )
+}
 
